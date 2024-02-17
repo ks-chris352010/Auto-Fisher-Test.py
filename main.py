@@ -6,34 +6,38 @@ import pyautogui
 FishStreak = 0
 Enabled = True
 Reeling = False
+Cooldown = 0
 ImagePaths = [
     "Images/FishCaught.png",
-    "Images/TreasureCaught.png"
+    "Images/TreasureCaught.png",
+    "Images/JunkCaught.png"
 ]
 
 
 def await_image(image="Images/Exclamation.png", confidence=1.0, fish_caught=False):
-    global Reeling, FishStreak
+    global Reeling, FishStreak, Cooldown
     found = False
     while Enabled and not found:
         try:
-            res = pyautogui.locateOnScreen(image, confidence=confidence)
+            res = pyautogui.locateOnScreen(image, confidence=confidence, grayscale=True)
             found = True
             if not fish_caught:
                 Reeling = True
                 print("!")
                 for i in ImagePaths:
-                    result_thread = threading.Thread(target=await_image, args=(i, 0.6, True))
+                    result_thread = threading.Thread(target=await_image, args=(i, 0.7, True))
                     result_thread.start()
                 while Reeling:
                     pyautogui.click()
-                    time.sleep(0.1)
                 return True
+            elif Reeling:
+                if Cooldown == 0 or Cooldown < time.time():
+                    Cooldown = time.time() + 8
+                    Reeling = False
+                    return True
+                return False
             else:
-                Reeling = False
-                time.sleep(0.5)
-                pyautogui.click()
-                return True
+                return False
         except Exception as e:
             pass
     return False
@@ -52,10 +56,12 @@ if __name__ == "__main__":
         while True:
             time.sleep(0.15)
             if Enabled:
-                await_image(confidence=0.75)
-                if not Reeling:
-                    FishStreak += 1
-                    print(f"Caught {FishStreak}")
+                if Cooldown == 0 or Cooldown < time.time()-6:
+                    await_image(confidence=0.65)
+                    if not Reeling:
+                        pyautogui.click()
+                        FishStreak += 1
+                        print(f"Caught {FishStreak}")
 
     finally:
         keyboard.unhook_all()
