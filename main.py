@@ -3,6 +3,7 @@ import keyboard
 import time
 import pyautogui
 
+Version = "0.22a"
 FishStreak = 0
 Enabled = True
 Reeling = False
