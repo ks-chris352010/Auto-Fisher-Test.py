@@ -14,10 +14,10 @@ ImagePaths = [
 ]
 
 
-def await_image(image="Images/Exclamation.png", confidence=1.0, fish_caught=False):
+def await_image(image="Images/Exclamation.png", confidence=1.0, fish_caught=False, timeout=0.0):
     global Reeling, FishStreak, Cooldown
     found = False
-    while Enabled and not found:
+    while Enabled and not found and timeout == 0 or timeout > time.time():
         try:
             res = pyautogui.locateOnScreen(image, confidence=confidence, grayscale=True)
             found = True
@@ -57,7 +57,7 @@ if __name__ == "__main__":
             time.sleep(0.15)
             if Enabled:
                 if Cooldown == 0 or Cooldown < time.time()-6:
-                    await_image(confidence=0.65)
+                    await_image(confidence=0.65, timeout=time.time()+30)
                     if not Reeling:
                         pyautogui.click()
                         FishStreak += 1
